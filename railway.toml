@@ -1,0 +1,11 @@
+# Pooshit API service (deploy from repo root: railway up)
+# User deploys go to the separate Railway project "pooshit".
+
+[build]
+builder = "DOCKERFILE"
+dockerfilePath = "packages/api/Dockerfile"
+
+[deploy]
+healthcheckPath = "/health"
+healthcheckTimeout = 300
+restartPolicyType = "ON_FAILURE"

@@ -1,0 +1,24 @@
+{
+  "name": "pooshit-monorepo",
+  "private": true,
+  "workspaces": [
+    "packages/*",
+    "apps/*"
+  ],
+  "scripts": {
+    "build": "npm run build --workspaces --if-present",
+    "dev:api": "npm run dev -w @pooshit/api",
+    "dev:web": "npm run dev -w @pooshit/web",
+    "deploy:web": "npm run pages:deploy -w @pooshit/web",
+    "pooshit": "node packages/cli/dist/index.js",
+    "deploy:api": "./scripts/railway-prod-setup.sh",
+    "deploy:api:push": "./scripts/railway-deploy.sh",
+    "go-live": "./scripts/go-live.sh",
+    "smoke": "./scripts/smoke-prod.sh",
+    "cleanup-deploys": "./scripts/cleanup-test-deploys.sh",
+    "typecheck": "npm run typecheck --workspaces --if-present"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

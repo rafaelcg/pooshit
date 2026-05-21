@@ -1,0 +1,45 @@
+{
+  "name": "pooshit",
+  "version": "0.1.2",
+  "description": "Ship anything with one command. Zero config.",
+  "type": "module",
+  "bin": {
+    "pooshit": "./dist/index.js"
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsx src/index.ts",
+    "typecheck": "tsc --noEmit",
+    "prepublishOnly": "npm run build"
+  },
+  "keywords": [
+    "hosting",
+    "deploy",
+    "cli",
+    "railway"
+  ],
+  "license": "MIT",
+  "dependencies": {
+    "archiver": "^7.0.1",
+    "commander": "^13.1.0",
+    "ignore": "^7.0.4",
+    "open": "^10.1.2",
+    "ora": "^8.2.0",
+    "picocolors": "^1.1.1"
+  },
+  "devDependencies": {
+    "@types/archiver": "^6.0.3",
+    "@types/node": "^22.15.3",
+    "tsx": "^4.19.4",
+    "typescript": "^5.8.3"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}

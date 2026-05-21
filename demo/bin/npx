@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+if [[ "${1:-}" == "pooshit" ]]; then
+  shift
+  exec bash "$(dirname "$0")/../run-pooshit-demo.sh"
+fi
+echo "demo npx: unknown command $*" >&2
+exit 1

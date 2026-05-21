@@ -1,0 +1,88 @@
+.legal-shell {
+  min-height: 100vh;
+  background: var(--bg, #0a0014);
+  color: var(--text, #f0e6ff);
+  position: relative;
+}
+
+.legal-grid {
+  position: fixed;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(255, 0, 170, 0.08) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0, 255, 255, 0.08) 1px, transparent 1px);
+  background-size: 40px 40px;
+  pointer-events: none;
+  opacity: 0.5;
+}
+
+.legal-page {
+  position: relative;
+  z-index: 1;
+  max-width: 42rem;
+  margin: 0 auto;
+  padding: 3rem 1.5rem 4rem;
+  font-family: "IBM Plex Sans", system-ui, sans-serif;
+  line-height: 1.65;
+}
+
+.legal-header a {
+  color: var(--cyan, #00ffff);
+  text-decoration: none;
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 0.875rem;
+}
+
+.legal-header h1 {
+  font-family: "Bungee", cursive;
+  font-size: clamp(2rem, 6vw, 2.75rem);
+  color: var(--pink, #ff00aa);
+  margin: 1.5rem 0 0.5rem;
+  letter-spacing: 0.02em;
+}
+
+.legal-updated {
+  color: rgba(240, 230, 255, 0.55);
+  font-size: 0.875rem;
+  margin: 0 0 2rem;
+}
+
+.legal-page section {
+  margin-bottom: 2rem;
+}
+
+.legal-page h2 {
+  font-size: 1.125rem;
+  color: var(--cyan, #00ffff);
+  margin: 0 0 0.75rem;
+  font-weight: 600;
+}
+
+.legal-page p,
+.legal-page li {
+  color: rgba(240, 230, 255, 0.88);
+}
+
+.legal-page ul {
+  padding-left: 1.25rem;
+}
+
+.legal-page code {
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 0.9em;
+  background: rgba(255, 0, 170, 0.12);
+  padding: 0.1em 0.35em;
+  border-radius: 3px;
+}
+
+.legal-footer {
+  margin-top: 3rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid rgba(255, 0, 170, 0.25);
+}
+
+.legal-footer a {
+  color: var(--cyan, #00ffff);
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 0.875rem;
+}

@@ -1,0 +1,11 @@
+# Deploy the Pooshit API itself (separate Railway project from user deploys).
+# Link this service in the pooshit-api project, not the user "pooshit" project.
+
+[build]
+builder = "DOCKERFILE"
+dockerfilePath = "packages/api/Dockerfile"
+
+[deploy]
+healthcheckPath = "/health"
+healthcheckTimeout = 300
+restartPolicyType = "ON_FAILURE"

@@ -1,0 +1,11 @@
+# Deploy the Pooshit API (Docker). Build context is the monorepo root.
+# From repo root: railway up
+
+[build]
+builder = "DOCKERFILE"
+dockerfilePath = "packages/api/Dockerfile"
+
+[deploy]
+healthcheckPath = "/health"
+healthcheckTimeout = 300
+restartPolicyType = "ON_FAILURE"
