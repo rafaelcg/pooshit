@@ -112,7 +112,8 @@ function DocsPageContent({ slug }: { slug: string }) {
           <h2>What is Pooshit?</h2>
           <p>
             Pooshit packages your project, detects the stack (static site, Node.js,
-            etc.), deploys to Railway, and gives you a public URL. No account required
+            etc.), deploys it, and gives you a public URL on{" "}
+            <code className="docs-inline-code">*.pooshit.dev</code>. No account required
             on the free tier.
           </p>
           <h2>Core concepts</h2>
@@ -309,7 +310,7 @@ cd dist && npx pooshit    # dist/ should contain index.html`}</pre>
           <h2>When a deploy fails</h2>
           <pre className="docs-code">npx pooshit logs</pre>
           <p>
-            Shows Railway build and runtime output for the linked deploy. For static
+            Shows build and runtime output for the linked deploy. For static
             sites, double-check you are in the folder that contains{" "}
             <code className="docs-inline-code">index.html</code>.
           </p>

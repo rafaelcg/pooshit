@@ -79,10 +79,10 @@ export const cliCommands: CliCommand[] = [
   {
     id: "logs",
     name: "logs",
-    summary: "Fetch Railway build/runtime logs",
+    summary: "Fetch build/runtime logs",
     usage: "npx pooshit logs [options]",
     description:
-      "Streams recent logs for the linked deploy from Railway. Useful when a build fails or the service crashes.",
+      "Streams recent logs for the linked deploy. Useful when a build fails or the service crashes.",
     status: "available",
     options: [
       { flag: "--lines <n>", description: "Number of log lines (default: 100)" },
@@ -118,10 +118,10 @@ export const cliCommands: CliCommand[] = [
   {
     id: "destroy",
     name: "destroy",
-    summary: "Delete a deploy and tear down Railway resources",
+    summary: "Delete a deploy and remove it from Pooshit",
     usage: "npx pooshit destroy [options]",
     description:
-      "Removes the linked deploy from Pooshit and deletes the Railway service. Clears .pooshit/project.json deploy fields and local state. Alias: delete.",
+      "Removes the linked deploy from Pooshit and tears down the hosted service. Clears .pooshit/project.json deploy fields and local state. Alias: delete.",
     status: "available",
     options: [
       { flag: "--token <token>", description: "Destroy by deploy token (CI teardown)" },
@@ -306,7 +306,7 @@ export const projectFileExample = `{
   "deployId": "f4e2a1b3c5d6",
   "deployToken": "ps_abc123…",
   "slug": "f4k9x2",
-  "url": "https://f4k9x2.up.railway.app",
+  "url": "https://0h5h1t.pooshit.dev",
   "expiresAt": "2026-05-22T12:00:00.000Z",
   "updatedAt": "2026-05-21T12:00:00.000Z"
 }`;

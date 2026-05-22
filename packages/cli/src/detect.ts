@@ -89,7 +89,7 @@ function checkNodePortUsage(cwd: string, warnings: string[]): void {
     const content = readFileSync(path, "utf-8");
     if (content.includes("listen(3000") || content.includes("localhost")) {
       warnings.push(
-        `Use process.env.PORT and 0.0.0.0 in ${file} — hardcoded ports fail on Railway`,
+        `Use process.env.PORT and 0.0.0.0 in ${file} — hardcoded ports fail in production`,
       );
     }
     if (!content.includes("process.env.PORT")) {

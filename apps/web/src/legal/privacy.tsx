@@ -39,8 +39,9 @@ export function PrivacyPage() {
       <section>
         <h2>Third parties</h2>
         <p>
-          User apps run on Railway. The landing site is hosted on Cloudflare Pages.
-          Those providers process traffic to deployed URLs under their own policies.
+          User apps run on Pooshit infrastructure. The landing site is hosted on
+          Cloudflare Pages. Those providers process traffic to deployed URLs under
+          their own policies.
         </p>
       </section>
 

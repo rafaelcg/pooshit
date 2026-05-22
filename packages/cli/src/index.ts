@@ -51,7 +51,7 @@ program
 
 program
   .command("destroy")
-  .description("Delete the linked deploy and tear down Railway resources")
+  .description("Delete the linked deploy and remove it from Pooshit")
   .alias("delete")
   .option("--token <token>", "Destroy by deploy token (for CI)")
   .option("--yes", "Skip confirmation prompt")

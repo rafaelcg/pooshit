@@ -62,7 +62,7 @@ export async function runDeploy(options: DeployOptions): Promise<void> {
     });
 
     if (packSpinner) {
-      packSpinner.text = "building on Railway…";
+      packSpinner.text = "building…";
     }
 
     const pollStartedAt = Date.now();
@@ -74,7 +74,7 @@ export async function runDeploy(options: DeployOptions): Promise<void> {
       if (status.status === "pending") {
         packSpinner.text = `queued… (${elapsedSec}s)`;
       } else if (status.status === "building") {
-        packSpinner.text = `building on Railway… (${elapsedSec}s)`;
+        packSpinner.text = `building… (${elapsedSec}s)`;
       }
     });
 

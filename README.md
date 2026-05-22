@@ -52,7 +52,7 @@ POOSHIT_API_URL=http://localhost:3099 npm run pooshit
 | Package | Description |
 |---------|-------------|
 | `packages/cli` | `pooshit` on npm — `npx pooshit` |
-| `packages/api` | Deploy API — upload + Railway orchestration |
+| `packages/api` | Deploy API — upload + orchestration |
 | `apps/web` | Landing page → Cloudflare Pages |
 
 ## Production stack
@@ -61,7 +61,7 @@ POOSHIT_API_URL=http://localhost:3099 npm run pooshit
 |-----------|-----|
 | Landing | https://pooshit.dev |
 | API (public) | https://api.pooshit.dev |
-| API (Railway upstream) | internal — see `workers/api-proxy` |
+| API (upstream) | internal — see `workers/api-proxy` |
 | User deploys | `https://{slug}.pooshit.dev` |
 
 See [DEPLOY.md](./DEPLOY.md) for Railway setup and [HANDOVER.md](./HANDOVER.md) for architecture.
