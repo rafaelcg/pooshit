@@ -1,5 +1,6 @@
-import { bootstrapEnv } from "./env.js";
+import * as Sentry from "@sentry/hono/node";
 import { serve } from "@hono/node-server";
+import { bootstrapEnv } from "./env.js";
 import { mkdir } from "node:fs/promises";
 import { createApp } from "./app.js";
 import { getConfig } from "./config.js";
@@ -50,5 +51,10 @@ async function main() {
 
 main().catch((error) => {
   console.error(error);
+  if (process.env.SENTRY_DSN?.trim()) {
+    Sentry.captureException(error);
+    void Sentry.flush(2000).finally(() => process.exit(1));
+    return;
+  }
   process.exit(1);
 });

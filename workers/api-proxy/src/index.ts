@@ -1,5 +1,9 @@
+import * as Sentry from "@sentry/cloudflare";
+
 export interface Env {
   UPSTREAM_URL: string;
+  SENTRY_DSN?: string;
+  CF_VERSION_METADATA?: { id: string };
 }
 
 interface RateLimitRule {
@@ -10,31 +14,40 @@ interface RateLimitRule {
 const DEPLOY_RATE: RateLimitRule = { limit: 10, windowSeconds: 60 };
 const POST_RATE: RateLimitRule = { limit: 30, windowSeconds: 60 };
 
-export default {
-  async fetch(request: Request, env: Env): Promise<Response> {
-    const url = new URL(request.url);
-    const clientIp = request.headers.get("CF-Connecting-IP") ?? "unknown";
+export default Sentry.withSentry(
+  (env: Env) => ({
+    dsn: env.SENTRY_DSN,
+    sendDefaultPii: true,
+    environment: "production",
+    tracesSampleRate: 0.1,
+    release: env.CF_VERSION_METADATA?.id,
+  }),
+  {
+    async fetch(request: Request, env: Env): Promise<Response> {
+      const url = new URL(request.url);
+      const clientIp = request.headers.get("CF-Connecting-IP") ?? "unknown";
 
-    if (url.pathname !== "/health" && url.pathname !== "/" && !url.pathname.startsWith("/v1")) {
-      return jsonError("Not found", 404);
-    }
-
-    if (request.method === "POST") {
-      const rule =
-        url.pathname === "/v1/deploy" || url.pathname.endsWith("/deploy")
-          ? DEPLOY_RATE
-          : POST_RATE;
-      const bucket = url.pathname === "/v1/deploy" ? "deploy" : "post";
-      if (await isRateLimited(`${bucket}:${clientIp}`, rule)) {
-        return jsonError("Rate limit exceeded — try again shortly", 429, {
-          "Retry-After": String(rule.windowSeconds),
-        });
+      if (url.pathname !== "/health" && url.pathname !== "/" && !url.pathname.startsWith("/v1")) {
+        return jsonError("Not found", 404);
       }
-    }
 
-    return proxyToUpstream(request, env, clientIp);
+      if (request.method === "POST") {
+        const rule =
+          url.pathname === "/v1/deploy" || url.pathname.endsWith("/deploy")
+            ? DEPLOY_RATE
+            : POST_RATE;
+        const bucket = url.pathname === "/v1/deploy" ? "deploy" : "post";
+        if (await isRateLimited(`${bucket}:${clientIp}`, rule)) {
+          return jsonError("Rate limit exceeded — try again shortly", 429, {
+            "Retry-After": String(rule.windowSeconds),
+          });
+        }
+      }
+
+      return proxyToUpstream(request, env, clientIp);
+    },
   },
-};
+);
 
 async function isRateLimited(key: string, rule: RateLimitRule): Promise<boolean> {
   const cache = caches.default;

@@ -1,6 +1,13 @@
+import * as Sentry from "@sentry/cloudflare";
+
 const DEPLOY_DOMAIN = "pooshit.dev";
 const RAILWAY_ENV = "production";
 const RAILWAY_HOST_SUFFIX = ".up.railway.app";
+
+interface Env {
+  SENTRY_DSN?: string;
+  CF_VERSION_METADATA?: { id: string };
+}
 
 function railwayUpstreamHost(slug: string): string {
   return `${slug}-${RAILWAY_ENV}${RAILWAY_HOST_SUFFIX}`;
@@ -18,47 +25,56 @@ const RESERVED_SUBDOMAINS = new Set([
 
 const SLUG_PATTERN = /^[a-z0-9-]{4,32}$/;
 
-export default {
-  async fetch(request: Request): Promise<Response> {
-    const url = new URL(request.url);
-    const subdomain = parseSubdomain(url.hostname);
+export default Sentry.withSentry(
+  (env: Env) => ({
+    dsn: env.SENTRY_DSN,
+    sendDefaultPii: true,
+    environment: "production",
+    tracesSampleRate: 0.1,
+    release: env.CF_VERSION_METADATA?.id,
+  }),
+  {
+    async fetch(request: Request, _env: Env): Promise<Response> {
+      const url = new URL(request.url);
+      const subdomain = parseSubdomain(url.hostname);
 
-    if (subdomain === "www") {
-      const target = new URL(url.pathname + url.search, "https://pooshit.dev");
-      return Response.redirect(target.toString(), 301);
-    }
+      if (subdomain === "www") {
+        const target = new URL(url.pathname + url.search, "https://pooshit.dev");
+        return Response.redirect(target.toString(), 301);
+      }
 
-    const slug = parseDeploySlug(url.hostname);
+      const slug = parseDeploySlug(url.hostname);
 
-    if (!slug) {
-      return new Response("Not found", { status: 404 });
-    }
+      if (!slug) {
+        return new Response("Not found", { status: 404 });
+      }
 
-    const upstreamHost = railwayUpstreamHost(slug);
-    const upstreamUrl = new URL(url.pathname + url.search, `https://${upstreamHost}`);
+      const upstreamHost = railwayUpstreamHost(slug);
+      const upstreamUrl = new URL(url.pathname + url.search, `https://${upstreamHost}`);
 
-    const headers = new Headers(request.headers);
-    headers.set("Host", upstreamHost);
+      const headers = new Headers(request.headers);
+      headers.set("Host", upstreamHost);
 
-    const upstreamRequest = new Request(upstreamUrl, {
-      method: request.method,
-      headers,
-      body: request.body,
-      redirect: "manual",
-    });
+      const upstreamRequest = new Request(upstreamUrl, {
+        method: request.method,
+        headers,
+        body: request.body,
+        redirect: "manual",
+      });
 
-    const response = await fetch(upstreamRequest);
+      const response = await fetch(upstreamRequest);
 
-    const responseHeaders = new Headers(response.headers);
-    responseHeaders.delete("content-security-policy");
+      const responseHeaders = new Headers(response.headers);
+      responseHeaders.delete("content-security-policy");
 
-    return new Response(response.body, {
-      status: response.status,
-      statusText: response.statusText,
-      headers: responseHeaders,
-    });
+      return new Response(response.body, {
+        status: response.status,
+        statusText: response.statusText,
+        headers: responseHeaders,
+      });
+    },
   },
-};
+);
 
 export function parseSubdomain(hostname: string): string | null {
   if (!hostname.endsWith(`.${DEPLOY_DOMAIN}`)) {

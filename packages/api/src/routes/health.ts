@@ -13,6 +13,7 @@ healthRoutes.get("/health", (c) => {
     db: getDriver(),
     mockDeploys: config.mockDeploys,
     useCliLogin: config.useCliLogin,
+    sentry: Boolean(config.sentryDsn),
     hetznerStatic: isHetznerStaticEnabled(config),
   });
 });

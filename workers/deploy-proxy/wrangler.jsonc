@@ -3,7 +3,11 @@
   "name": "pooshit-deploy-proxy",
   "main": "src/index.ts",
   "compatibility_date": "2026-05-22",
+  "compatibility_flags": ["nodejs_compat"],
   "account_id": "9a0a6bde3f409e4bca3f2292baf9cda8",
+  "version_metadata": {
+    "binding": "CF_VERSION_METADATA"
+  },
   "routes": [
     {
       "pattern": "*.pooshit.dev/*",

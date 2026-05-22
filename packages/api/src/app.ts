@@ -1,5 +1,6 @@
 import { Hono } from "hono";
 import { cors } from "hono/cors";
+import { sentry } from "@sentry/hono/node";
 import { getConfig } from "./config.js";
 import { deployRoutes } from "./routes/deploy.js";
 import { healthRoutes } from "./routes/health.js";
@@ -8,6 +9,16 @@ import { statsRoutes } from "./routes/stats.js";
 export function createApp() {
   const app = new Hono();
   const config = getConfig();
+
+  if (config.sentryDsn) {
+    app.use("*", sentry(app));
+  }
+
+  if (config.sentryDebug) {
+    app.get("/debug-sentry", () => {
+      throw new Error("My first Sentry error!");
+    });
+  }
 
   app.use(
     "*",

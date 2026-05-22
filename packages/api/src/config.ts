@@ -26,6 +26,8 @@ export interface PooshitConfig {
   hetznerSshPrivateKey: string | undefined;
   hetznerSitesRoot: string;
   hetznerStaticDomain: string | undefined;
+  sentryDsn: string | undefined;
+  sentryDebug: boolean;
 }
 
 export function getConfig(): PooshitConfig {
@@ -74,5 +76,7 @@ export function getConfig(): PooshitConfig {
     hetznerSitesRoot: process.env.HETZNER_SITES_ROOT?.trim() || "/var/www/pooshit/sites",
     hetznerStaticDomain:
       process.env.HETZNER_STATIC_DOMAIN?.trim() || undefined,
+    sentryDsn: process.env.SENTRY_DSN?.trim() || undefined,
+    sentryDebug: process.env.SENTRY_DEBUG === "true",
   };
 }

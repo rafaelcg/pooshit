@@ -12,6 +12,7 @@ ENV_FILE="$ROOT/packages/api/.env"
 if [[ -f "$ENV_FILE" ]]; then
   export CLOUDFLARE_API_TOKEN="$(grep '^CLOUDFLARE_API_TOKEN=' "$ENV_FILE" | cut -d= -f2- | tr -d '\r' || true)"
   export CLOUDFLARE_ACCOUNT_ID="$(grep '^CLOUDFLARE_ACCOUNT_ID=' "$ENV_FILE" | cut -d= -f2- | tr -d '\r' || true)"
+  export SENTRY_DSN="$(grep '^SENTRY_DSN=' "$ENV_FILE" | cut -d= -f2- | tr -d '\r' || true)"
 fi
 
 if [[ -z "${CLOUDFLARE_API_TOKEN:-}" ]]; then
@@ -24,7 +25,10 @@ deploy_worker() {
   local label="$2"
   echo "==> Deploy ${label}"
   cd "$ROOT/${dir}"
-  npm install --no-save wrangler typescript @cloudflare/workers-types 2>/dev/null || npm install
+  npm install 2>/dev/null || npm install --no-save wrangler typescript @cloudflare/workers-types @sentry/cloudflare
+  if [[ -n "${SENTRY_DSN:-}" ]]; then
+    printf '%s' "$SENTRY_DSN" | npx wrangler secret put SENTRY_DSN 2>/dev/null || true
+  fi
   npx wrangler deploy
 }
 
