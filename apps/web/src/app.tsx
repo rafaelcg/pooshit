@@ -48,7 +48,7 @@ function BoomboxTerminal() {
           <div className="bb-line t-d">◑ uploading 6.7mb…</div>
           <div className="bb-line t-d">◒ building…</div>
           <div className="bb-line t-o">
-            → <span className="t-u">f4k9x2.pooshit.dev</span>
+            → <span className="t-u">0h5h1t.pooshit.dev</span>
           </div>
           <div className="bb-line t-d">⏱ 24h · pooshit. real good.</div>
         </div>
