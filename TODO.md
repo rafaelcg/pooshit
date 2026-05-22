@@ -12,14 +12,14 @@ Things to finish before going live. Ordered roughly by priority.
 
 - [x] **Create Railway project `pooshit`** — user deploys land here
 - [x] **API project** — `hostie-api` (linked to repo) + `api` service + Postgres
-- [ ] **Verify 24h cleanup in production** — run `./scripts/test-ttl-cleanup.sh` when API is idle
-- [ ] **Verify user deploys land in `pooshit` project** — GraphQL `serviceCreate` + minimal CLI env (deploy pending; Railway rate limit)
+- [ ] **Verify 24h cleanup in production** — run `./scripts/test-ttl-cleanup.sh` when API is idle (blocked: Railway rate limit May 22)
+- [ ] **Verify user deploys land in `pooshit` project** — run `./scripts/verify-railway-project.sh` after rate limit clears
 
 ### CLI & npm
 
 - [x] **Publish to npm** — `pooshit@0.1.0` on npm
 - [x] **Set CLI default `POOSHIT_API_URL`** to production Railway API URL
-- [ ] **Record terminal GIF** for README / landing page
+- [ ] **Record terminal GIF** for README / landing page — done (`demo/pooshit-demo.gif`, hero on landing)
 - [x] **Test end-to-end** — `./scripts/smoke-prod.sh` (static + node redeploy same dirs)
 - [x] **CORS** — `ALLOWED_ORIGINS=https://pooshit.pages.dev` on API
 - [x] **`.env` gitignored** — `packages/api/.env` covered
@@ -28,7 +28,7 @@ Things to finish before going live. Ordered roughly by priority.
 
 - [x] **Cloudflare Pages** — live at https://pooshit.pages.dev
   - [x] Set `VITE_API_URL` to Railway API URL for live stats counter
-  - [ ] Connect GitHub repo for auto-deploys (optional)
+- [ ] Connect GitHub repo for auto-deploys — workflow added (`.github/workflows/deploy-pages.yml`); add `CLOUDFLARE_API_TOKEN` + `CLOUDFLARE_ACCOUNT_ID` secrets
 
 ### Security & abuse
 
@@ -91,7 +91,12 @@ Things to finish before going live. Ordered roughly by priority.
 ## P3 — Growth & ops
 
 - [ ] **Launch posts** — HN, X, r/webdev with demo GIF
-- [ ] **Dogfood** — deploy landing page via `npx pooshit`
+- [x] **GitHub repo** — private at https://github.com/rafaelcg/pooshit
+- [x] **GitHub link on landing** — footer + `VITE_GITHUB_URL`
+- [x] **OG / social preview** — `apps/web/public/og.jpg`
+- [x] **Terms / privacy** — `/terms`, `/privacy`
+- [ ] **Dogfood** — deploy landing via `npx pooshit` (blocked: Railway GraphQL 429)
+- [ ] **Orphan Railway cleanup** — run `./scripts/cleanup-test-deploys.sh` after rate limit clears
 - [ ] **Deploy counter** on homepage (already partially wired)
 - [ ] **Monitoring** — Railway metrics, error alerting on deploy failure rate
 - [ ] **Cost dashboard** — track Railway spend per free user vs Pro revenue
