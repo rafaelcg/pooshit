@@ -1,3 +1,4 @@
+import { useMemo } from "react";
 import {
   ciExample,
   cliCommands,
@@ -8,6 +9,8 @@ import {
   projectFileExample,
   type CliCommand,
 } from "./content";
+import { getDocsMeta } from "../lib/site-seo";
+import { usePageMeta } from "../lib/use-page-meta";
 import { CommandPalette, useCommandPalette } from "./command-palette";
 import "./docs.css";
 
@@ -167,6 +170,149 @@ function DocsPageContent({ slug }: { slug: string }) {
           </p>
           <h2>Check status</h2>
           <pre className="docs-code">npx pooshit status{"\n"}npx pooshit open</pre>
+          <h2>Examples</h2>
+          <pre className="docs-code">{`# Static site — just needs index.html in the folder
+mkdir demo && echo '<h1>hello</h1>' > demo/index.html
+cd demo && npx pooshit
+
+# Node app — needs a start script
+# package.json: { "scripts": { "start": "node server.js" } }
+cd my-api && npx pooshit`}</pre>
+          <p>
+            See <a href="/docs/project-types">What you can deploy</a> for full detection
+            rules and troubleshooting.
+          </p>
+        </>
+      );
+
+    case "project-types":
+      return (
+        <>
+          <h1>What you can deploy</h1>
+          <p className="docs-lead">
+            Pooshit looks at the <strong>current directory</strong> and picks a deploy
+            type automatically. No flags required for the common cases.
+          </p>
+          <h2>Static sites</h2>
+          <p>
+            If the folder has an <code className="docs-inline-code">index.html</code> and
+            no runnable Node app, Pooshit serves it as a static site.
+          </p>
+          <pre className="docs-code">{`my-site/
+  index.html    ← required at the root
+  styles.css    ← optional assets`}</pre>
+          <p>
+            Works even if a <code className="docs-inline-code">package.json</code> exists
+            — as long as there is no{" "}
+            <code className="docs-inline-code">start</code> or{" "}
+            <code className="docs-inline-code">build</code> script and no server entry
+            file (<code className="docs-inline-code">server.js</code>,{" "}
+            <code className="docs-inline-code">index.js</code>, etc.).
+          </p>
+          <h2>Node apps</h2>
+          <p>Detected when the folder has a real server to run:</p>
+          <ul>
+            <li>
+              A <code className="docs-inline-code">start</code> script in{" "}
+              <code className="docs-inline-code">package.json</code>
+            </li>
+            <li>
+              Or a server entry file like{" "}
+              <code className="docs-inline-code">server.js</code> /{" "}
+              <code className="docs-inline-code">index.js</code>
+            </li>
+          </ul>
+          <pre className="docs-code">{`{
+  "scripts": {
+    "start": "node server.js"
+  }
+}`}</pre>
+          <p>
+            Your server must listen on{" "}
+            <code className="docs-inline-code">process.env.PORT</code> and bind to{" "}
+            <code className="docs-inline-code">0.0.0.0</code> — not a hardcoded localhost
+            port.
+          </p>
+          <h2>Docker</h2>
+          <p>
+            A <code className="docs-inline-code">Dockerfile</code> in the folder (without
+            a static-only <code className="docs-inline-code">index.html</code> taking
+            precedence) deploys as a container.
+          </p>
+          <h2>SPAs (Vite, React, etc.)</h2>
+          <p>
+            Build first, then deploy the output folder — Pooshit does not run{" "}
+            <code className="docs-inline-code">npm run build</code> for you.
+          </p>
+          <pre className="docs-code">{`npm run build
+cd dist && npx pooshit    # dist/ should contain index.html`}</pre>
+          <p>
+            Alternatively, add a <code className="docs-inline-code">start</code> script
+            that serves the built files (e.g. with{" "}
+            <code className="docs-inline-code">serve</code>).
+          </p>
+          <h2>Detection order</h2>
+          <div className="docs-table-wrap">
+            <table className="docs-table">
+              <thead>
+                <tr>
+                  <th>What is in the folder</th>
+                  <th>Deploy type</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>
+                    <code className="docs-inline-code">index.html</code>, no{" "}
+                    <code className="docs-inline-code">start</code> script
+                  </td>
+                  <td>Static</td>
+                </tr>
+                <tr>
+                  <td>
+                    <code className="docs-inline-code">package.json</code> with{" "}
+                    <code className="docs-inline-code">start</code> or server entry
+                  </td>
+                  <td>Node</td>
+                </tr>
+                <tr>
+                  <td>
+                    <code className="docs-inline-code">Dockerfile</code>
+                  </td>
+                  <td>Docker</td>
+                </tr>
+                <tr>
+                  <td>Neither — Pooshit tries a generic deploy</td>
+                  <td>Generic</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <h2>Common mistakes</h2>
+          <ul>
+            <li>
+              <strong>Wrong folder</strong> — running from a monorepo root deploys the
+              root, not your app subfolder.{" "}
+              <code className="docs-inline-code">cd</code> into the project first.
+            </li>
+            <li>
+              <strong>Unbuilt SPA</strong> — deploy{" "}
+              <code className="docs-inline-code">dist/</code>, not the source tree.
+            </li>
+            <li>
+              <strong>Missing start script</strong> — a Node API without{" "}
+              <code className="docs-inline-code">scripts.start</code> will fail. Static
+              HTML in the same folder is served instead when{" "}
+              <code className="docs-inline-code">index.html</code> is present.
+            </li>
+          </ul>
+          <h2>When a deploy fails</h2>
+          <pre className="docs-code">npx pooshit logs</pre>
+          <p>
+            Shows Railway build and runtime output for the linked deploy. For static
+            sites, double-check you are in the folder that contains{" "}
+            <code className="docs-inline-code">index.html</code>.
+          </p>
         </>
       );
 
@@ -417,6 +563,9 @@ export function DocsApp() {
   const { open, openPalette, closePalette } = useCommandPalette();
   const isMac =
     typeof navigator !== "undefined" && /Mac|iPhone|iPad/.test(navigator.platform);
+
+  const meta = useMemo(() => getDocsMeta(slug), [slug]);
+  usePageMeta(meta);
 
   return (
     <div className="docs-root">

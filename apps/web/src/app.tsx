@@ -1,6 +1,11 @@
 import { useEffect, useState, type ReactNode } from "react";
 import { BackgroundScene } from "./components/background-scene";
 import { Marquee } from "./components/marquee";
+import {
+  faqItems,
+  homeMeta,
+} from "./lib/site-seo";
+import { usePageMeta } from "./lib/use-page-meta";
 
 interface Stats {
   totalDeploys: number;
@@ -97,10 +102,30 @@ function PricingTrack({
   );
 }
 
+function FaqSection() {
+  return (
+    <section className="faq" aria-labelledby="faq-heading">
+      <p className="faq-head" id="faq-heading">
+        ◆ FAQ ◆
+      </p>
+      <dl className="faq-list">
+        {faqItems.map((item) => (
+          <div key={item.question} className="faq-item">
+            <dt>{item.question}</dt>
+            <dd>{item.answer}</dd>
+          </div>
+        ))}
+      </dl>
+    </section>
+  );
+}
+
 export function App() {
   const [stats, setStats] = useState<Stats | null>(null);
   const githubUrl =
     import.meta.env.VITE_GITHUB_URL ?? "https://github.com/rafaelcg/pooshit";
+
+  usePageMeta(homeMeta);
 
   useEffect(() => {
     const apiUrl = import.meta.env.VITE_API_URL;
@@ -124,11 +149,20 @@ export function App() {
         <main className="hero-main">
           <div>
             <div className="push-badge">★ PUSH IT ★</div>
-            <h1 className="hero-title">pooshit</h1>
+            <h1 className="hero-title">
+              pooshit
+              <span className="sr-only"> — deploy from your terminal</span>
+            </h1>
             <p className="hero-subtitle">real good.</p>
             <p className="hero-tagline">
               Zero-config hosting from your terminal. One command, public URL in ~60
-              seconds. No signup, no dashboard — just pooshit, real good.
+              seconds on *.pooshit.dev. No signup, no dashboard — just pooshit, real
+              good.{" "}
+              <a href="/docs/quickstart">Quickstart</a>
+              {" · "}
+              <a href="/docs/project-types">What you can deploy</a>
+              {" · "}
+              <a href="/docs/ci">CI/CD</a>
             </p>
             <div className="cmd-wrap">
               <CopyCommandButton />
@@ -186,6 +220,8 @@ export function App() {
             />
           </div>
         </section>
+
+        <FaqSection />
 
         <footer className="page-footer">
           SHIPPED WITH POOSHIT · 1986 CALLED · IT WANTS ITS GRID BACK ·{" "}

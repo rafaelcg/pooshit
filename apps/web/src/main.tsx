@@ -5,7 +5,27 @@ import { DocsApp } from "./docs/docs-app";
 import { LegalShell } from "./legal/legal-shell";
 import { PrivacyPage } from "./legal/privacy";
 import { TermsPage } from "./legal/terms";
+import { privacyMeta, termsMeta } from "./lib/site-seo";
+import { usePageMeta } from "./lib/use-page-meta";
 import "./index.css";
+
+function TermsRoute() {
+  usePageMeta(termsMeta);
+  return (
+    <LegalShell>
+      <TermsPage />
+    </LegalShell>
+  );
+}
+
+function PrivacyRoute() {
+  usePageMeta(privacyMeta);
+  return (
+    <LegalShell>
+      <PrivacyPage />
+    </LegalShell>
+  );
+}
 
 function Root() {
   const path = window.location.pathname;
@@ -13,18 +33,10 @@ function Root() {
     return <DocsApp />;
   }
   if (path === "/terms") {
-    return (
-      <LegalShell>
-        <TermsPage />
-      </LegalShell>
-    );
+    return <TermsRoute />;
   }
   if (path === "/privacy") {
-    return (
-      <LegalShell>
-        <PrivacyPage />
-      </LegalShell>
-    );
+    return <PrivacyRoute />;
   }
   return <App />;
 }
