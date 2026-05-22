@@ -19,13 +19,22 @@ Requires `*.pooshit.dev` route on the `pooshit.dev` zone (configured in `wrangle
 
 ## DNS (required once)
 
-In Cloudflare → **pooshit.dev** → **DNS**, add:
+Wrangler has **no `dns` command**. Worker Custom Domains (`custom_domain: true`) auto-create DNS but **do not support wildcards**, so we use the Cloudflare API:
+
+```bash
+./scripts/setup-pooshit-dns.sh
+```
+
+Your `CLOUDFLARE_API_TOKEN` needs **Zone → DNS → Edit** on `pooshit.dev`  
+([edit token](https://dash.cloudflare.com/profile/api-tokens)).
+
+This creates:
 
 | Type | Name | Target | Proxy |
 |------|------|--------|-------|
-| CNAME | `*` | `pooshit.dev` | Proxied (orange) |
+| CNAME | `*` | `pooshit.dev` | Proxied |
 
-Apex `pooshit.dev` stays on Pages; the Worker route handles all other subdomains.
+`./scripts/deploy-edge-proxy.sh` runs DNS setup automatically before deploying the Worker.
 
 ## API
 
