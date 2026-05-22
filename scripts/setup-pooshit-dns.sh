@@ -94,4 +94,46 @@ else
 fi
 
 echo "✓ Wildcard DNS ready: *.${ZONE_NAME} → ${WILDCARD_TARGET}"
+
+ensure_cname() {
+  local name="$1"
+  local target="$2"
+  local fqdn="${name}.${ZONE_NAME}"
+  if [[ "$name" == "@" ]]; then
+    fqdn="${ZONE_NAME}"
+  fi
+
+  EXISTING="$(cf_api GET "/zones/${ZONE_ID}/dns_records?type=CNAME&name=${fqdn}" 2>&1)"
+  RECORD_ID="$(echo "$EXISTING" | python3 -c "
+import json, sys
+data = json.load(sys.stdin)
+for r in data.get('result') or []:
+    print(r['id'])
+    break
+" 2>/dev/null || true)"
+
+  PAYLOAD="$(python3 -c "
+import json
+print(json.dumps({
+  'type': 'CNAME',
+  'name': '${name}',
+  'content': '${target}',
+  'proxied': True,
+  'ttl': 1,
+}))
+")"
+
+  if [[ -n "$RECORD_ID" ]]; then
+    echo "Updating CNAME ${name} → ${target}..."
+    cf_api PUT "/zones/${ZONE_ID}/dns_records/${RECORD_ID}" "$PAYLOAD" >/dev/null
+  else
+    echo "Creating CNAME ${name} → ${target} (proxied)..."
+    cf_api POST "/zones/${ZONE_ID}/dns_records" "$PAYLOAD" >/dev/null
+  fi
+}
+
+# Explicit www beats wildcard; Worker redirects www → apex landing.
+ensure_cname "www" "pooshit.dev"
+
 echo "  Verify: dig test123.${ZONE_NAME} +short"
+echo "  Verify: curl -I https://www.${ZONE_NAME}"

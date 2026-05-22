@@ -16,6 +16,13 @@ const SLUG_PATTERN = /^[a-z0-9-]{4,32}$/;
 export default {
   async fetch(request: Request): Promise<Response> {
     const url = new URL(request.url);
+    const subdomain = parseSubdomain(url.hostname);
+
+    if (subdomain === "www") {
+      const target = new URL(url.pathname + url.search, "https://pooshit.dev");
+      return Response.redirect(target.toString(), 301);
+    }
+
     const slug = parseDeploySlug(url.hostname);
 
     if (!slug) {
@@ -48,13 +55,22 @@ export default {
   },
 };
 
-export function parseDeploySlug(hostname: string): string | null {
+export function parseSubdomain(hostname: string): string | null {
   if (!hostname.endsWith(`.${DEPLOY_DOMAIN}`)) {
     return null;
   }
 
   const subdomain = hostname.slice(0, -(DEPLOY_DOMAIN.length + 1));
   if (!subdomain || subdomain.includes(".")) {
+    return null;
+  }
+
+  return subdomain;
+}
+
+export function parseDeploySlug(hostname: string): string | null {
+  const subdomain = parseSubdomain(hostname);
+  if (!subdomain) {
     return null;
   }
 
