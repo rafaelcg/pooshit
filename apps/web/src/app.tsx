@@ -45,10 +45,10 @@ function BoomboxTerminal() {
             <span className="t-p">npx pooshit</span>
           </div>
           <div className="bb-line t-d">◐ packing…</div>
-          <div className="bb-line t-d">◑ uploading 4.2MB…</div>
+          <div className="bb-line t-d">◑ uploading 6.7mb…</div>
           <div className="bb-line t-d">◒ building…</div>
           <div className="bb-line t-o">
-            → <span className="t-u">f4k9x2.up.railway.app</span>
+            → <span className="t-u">f4k9x2.pooshit.dev</span>
           </div>
           <div className="bb-line t-d">⏱ 24h · pooshit. real good.</div>
         </div>
@@ -140,14 +140,6 @@ export function App() {
                 </span>
               )}
             </div>
-            <img
-              className="hero-demo"
-              src="/demo.gif"
-              alt="Terminal recording: npx pooshit deploys a site and prints a live URL"
-              width={640}
-              height={340}
-              loading="lazy"
-            />
           </div>
 
           <div>
@@ -166,7 +158,7 @@ export function App() {
               features={[
                 "50 MB projects",
                 "Live for 24 hours",
-                "Random subdomain",
+                "Random *.pooshit.dev subdomain",
                 "No signup needed",
                 "3 projects at a time",
               ]}
