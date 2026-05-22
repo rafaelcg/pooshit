@@ -2,6 +2,7 @@ import { execa } from "execa";
 import { mkdir, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 import { getConfig } from "../config.js";
+import { buildUrl } from "../lib/ids.js";
 import { buildRailwaySubprocessEnv } from "../env.js";
 import {
   createEmptyService,
@@ -120,7 +121,10 @@ export async function deployToRailway(options: {
 
   await waitForHealthyDeploy(options.sourceDir, serviceName, config.railwayEnvironment);
 
-  const url = await resolvePublicUrl(options.sourceDir, serviceName);
+  const railwayUrl = await resolvePublicUrl(options.sourceDir, serviceName);
+  const url = config.pooshitDomain
+    ? buildUrl(serviceName, config.pooshitDomain)
+    : railwayUrl;
   const serviceId =
     (await findServiceIdByName(projectId, serviceName)) ?? serviceName;
 

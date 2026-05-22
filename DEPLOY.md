@@ -13,7 +13,7 @@
 | `pooshit-api` | Hono API + Postgres |
 | `pooshit` | User deploy services (one service per `npx pooshit`) |
 
-No custom domain required — Railway gives you `*.up.railway.app` URLs.
+No custom domain required for v1 — Railway gives you `*.up.railway.app` URLs. For **pooshit.dev subdomains**, see [workers/deploy-proxy/README.md](./workers/deploy-proxy/README.md).
 
 ---
 

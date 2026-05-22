@@ -15,6 +15,6 @@ temp/
 packages/api/pooshit.db
 packages/api/pooshit.db-journal
 *.tsbuildinfo
-.pooshit/
+workers/**/node_modules
 uploads
 tmp

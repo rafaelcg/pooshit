@@ -1,0 +1,13 @@
+{
+  "$schema": "../../node_modules/wrangler/config-schema.json",
+  "name": "pooshit-deploy-proxy",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-05-22",
+  "account_id": "9a0a6bde3f409e4bca3f2292baf9cda8",
+  "routes": [
+    {
+      "pattern": "*.pooshit.dev/*",
+      "zone_name": "pooshit.dev"
+    }
+  ]
+}
