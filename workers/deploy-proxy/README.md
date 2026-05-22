@@ -6,13 +6,13 @@ Routes user deploy URLs:
 https://{slug}.pooshit.dev  →  https://{slug}.up.railway.app
 ```
 
-The apex `pooshit.dev` stays on **Cloudflare Pages** (landing). Reserved subdomains (`www`, `api`, `docs`, …) are not proxied.
+The apex `pooshit.dev` stays on **Cloudflare Pages** (landing). Reserved subdomains (`www`, `api`, …) are handled by other Workers or redirects. User deploy API is at **`api.pooshit.dev`** (see `workers/api-proxy`).
 
 ## Deploy
 
 ```bash
 # Uses CLOUDFLARE_API_TOKEN from packages/api/.env
-./scripts/deploy-edge-proxy.sh
+./scripts/deploy-cloudflare-edge.sh
 ```
 
 Requires `*.pooshit.dev` route on the `pooshit.dev` zone (configured in `wrangler.jsonc`).
@@ -34,7 +34,7 @@ This creates:
 |------|------|--------|-------|
 | CNAME | `*` | `pooshit.dev` | Proxied |
 
-`./scripts/deploy-edge-proxy.sh` runs DNS setup automatically before deploying the Worker.
+`./scripts/deploy-cloudflare-edge.sh` runs DNS setup and deploys **both** Workers (deploy proxy + API proxy).
 
 ## API
 

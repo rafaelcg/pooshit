@@ -60,7 +60,8 @@ POOSHIT_API_URL=http://localhost:3099 npm run pooshit
 | Component | URL |
 |-----------|-----|
 | Landing | https://pooshit.dev |
-| API | https://api-production-95f7.up.railway.app |
+| API (public) | https://api.pooshit.dev |
+| API (Railway upstream) | internal — see `workers/api-proxy` |
 | User deploys | `https://{slug}.pooshit.dev` |
 
 See [DEPLOY.md](./DEPLOY.md) for Railway setup and [HANDOVER.md](./HANDOVER.md) for architecture.
@@ -85,4 +86,4 @@ See [DEPLOY.md](./DEPLOY.md) for Railway setup and [HANDOVER.md](./HANDOVER.md) 
 
 ## License
 
-MIT
+MIT — see [LICENSE](./LICENSE). Security: [SECURITY.md](./SECURITY.md).

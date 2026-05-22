@@ -12,7 +12,7 @@ fi
 unset RAILWAY_USE_CLI_LOGIN RAILWAY_TOKEN
 
 API_SERVICE="${RAILWAY_SERVICE:-api}"
-USER_PROJECT_ID="339fc37c-31d3-49dc-99e6-ac591941748e"
+USER_PROJECT_ID="${RAILWAY_USER_PROJECT_ID:?Set RAILWAY_USER_PROJECT_ID in packages/api/.env}"
 
 echo "Setting FREE_TTL_HOURS=0.01 on API..."
 railway variable set --service "$API_SERVICE" --skip-deploys FREE_TTL_HOURS=0.01

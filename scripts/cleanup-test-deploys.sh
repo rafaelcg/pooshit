@@ -52,5 +52,5 @@ export DATABASE_URL="$(railway variables --service Postgres --json 2>/dev/null |
 node "$ROOT/packages/api/scripts/expire-by-slugs.mjs" "${TEST_SLUGS[@]}"
 
 echo
-curl -sf "https://api-production-95f7.up.railway.app/v1/stats" | python3 -m json.tool || true
+curl -sf "https://api.pooshit.dev/v1/stats" | python3 -m json.tool || true
 echo "✓ Cleanup complete"

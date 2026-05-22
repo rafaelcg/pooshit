@@ -51,6 +51,8 @@ export const cliCommands: CliCommand[] = [
       "npx pooshit deploy --token ps_abc123",
     ],
     notes: [
+      "Run from the folder you want live — not a monorepo root unless that is the app.",
+      "See What you can deploy for how static vs Node detection works.",
       "Token resolution order: --token flag → POOSHIT_DEPLOY_TOKEN env → .pooshit/project.json → ~/.pooshit/deploys.json",
     ],
   },
@@ -182,7 +184,7 @@ export const cliCommands: CliCommand[] = [
 export const envVars = [
   {
     name: "POOSHIT_API_URL",
-    default: "https://api-production-95f7.up.railway.app",
+    default: "https://api.pooshit.dev",
     description: "Override the Pooshit API base URL (useful for self-hosting or staging).",
   },
   {
@@ -213,6 +215,23 @@ export const docSections: DocSection[] = [
         section: "Getting started",
         description: "Deploy in 60 seconds",
         searchTerms: ["install", "first deploy", "npx"],
+      },
+      {
+        id: "project-types",
+        title: "What you can deploy",
+        slug: "project-types",
+        section: "Getting started",
+        description: "Static HTML, Node apps, Docker, and common gotchas",
+        searchTerms: [
+          "static",
+          "index.html",
+          "node",
+          "docker",
+          "vite",
+          "react",
+          "detection",
+          "stack",
+        ],
       },
     ],
   },

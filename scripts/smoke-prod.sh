@@ -23,7 +23,7 @@ run_test() {
 }
 
 test_health() {
-  curl -sf "https://api-production-95f7.up.railway.app/health" | grep -q '"ok":true'
+  curl -sf "https://api.pooshit.dev/health" | grep -q '"ok":true'
 }
 
 test_npx_version() {

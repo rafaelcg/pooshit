@@ -5,7 +5,7 @@ export interface PooshitCliConfig {
 export function getCliConfig(): PooshitCliConfig {
   return {
     apiUrl: (
-      process.env.POOSHIT_API_URL ?? "https://api-production-95f7.up.railway.app"
+      process.env.POOSHIT_API_URL ?? "https://api.pooshit.dev"
     ).replace(/\/$/, ""),
   };
 }

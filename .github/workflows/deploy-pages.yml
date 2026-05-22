@@ -32,7 +32,7 @@ jobs:
       - name: Build landing
         run: npm run build -w @pooshit/web
         env:
-          VITE_API_URL: https://api-production-95f7.up.railway.app
+          VITE_API_URL: https://api.pooshit.dev
           VITE_GITHUB_URL: https://github.com/rafaelcg/pooshit
 
       - name: Deploy to Cloudflare Pages

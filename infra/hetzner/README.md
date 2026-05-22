@@ -55,7 +55,7 @@ ssh-keygen -t ed25519 -f pooshit-hetzner -N ""
 ## Verify
 
 ```bash
-curl https://api-production-95f7.up.railway.app/health
+curl https://api.pooshit.dev/health
 # hetznerStatic: true
 
 # Deploy a static folder

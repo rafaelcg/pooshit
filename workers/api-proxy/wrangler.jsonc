@@ -1,0 +1,16 @@
+{
+  "$schema": "../../node_modules/wrangler/config-schema.json",
+  "name": "pooshit-api-proxy",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-05-22",
+  "account_id": "9a0a6bde3f409e4bca3f2292baf9cda8",
+  "routes": [
+    {
+      "pattern": "api.pooshit.dev/*",
+      "zone_name": "pooshit.dev"
+    }
+  ],
+  "vars": {
+    "UPSTREAM_URL": "https://api-production-95f7.up.railway.app"
+  }
+}

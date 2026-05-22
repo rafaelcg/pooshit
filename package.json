@@ -10,7 +10,7 @@
     "dev:api": "npm run dev -w @pooshit/api",
     "dev:web": "npm run dev -w @pooshit/web",
     "deploy:web": "npm run pages:deploy -w @pooshit/web",
-    "deploy:edge": "./scripts/deploy-edge-proxy.sh",
+    "deploy:edge": "./scripts/deploy-cloudflare-edge.sh",
     "setup:dns": "./scripts/setup-pooshit-dns.sh",
     "pooshit": "node packages/cli/dist/index.js",
     "deploy:api": "./scripts/railway-prod-setup.sh",

@@ -4,7 +4,7 @@ export function TermsPage() {
       <header className="legal-header">
         <a href="/">← pooshit</a>
         <h1>Terms of Service</h1>
-        <p className="legal-updated">Last updated: May 21, 2026</p>
+        <p className="legal-updated">Last updated: May 22, 2026</p>
       </header>
 
       <section>
@@ -26,7 +26,18 @@ export function TermsPage() {
         </ul>
         <p>
           We may remove deploys and block IPs without notice if we detect abuse or
-          security risk.
+          security risk. Automated edge rate limits and manual review apply.
+        </p>
+      </section>
+
+      <section>
+        <h2>Security</h2>
+        <p>
+          To report a vulnerability, see our{" "}
+          <a href="https://github.com/rafaelcg/pooshit/blob/main/SECURITY.md" target="_blank" rel="noreferrer">
+            security policy
+          </a>
+          . Do not disclose security issues in public GitHub issues.
         </p>
       </section>
 
