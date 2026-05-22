@@ -8,7 +8,7 @@ npx pooshit
 
 ![Deploy demo](demo/pooshit-demo.gif)
 
-**Live:** [pooshit.pages.dev](https://pooshit.pages.dev) · API at `api-production-95f7.up.railway.app`
+**Live:** [pooshit.dev](https://pooshit.dev) · API at `api-production-95f7.up.railway.app`
 
 ## Quick start
 
@@ -47,7 +47,7 @@ POOSHIT_API_URL=http://localhost:3099 npm run pooshit
 
 | Component | URL |
 |-----------|-----|
-| Landing | https://pooshit.pages.dev |
+| Landing | https://pooshit.dev |
 | API | https://api-production-95f7.up.railway.app |
 | User deploys | `https://{slug}.up.railway.app` |
 

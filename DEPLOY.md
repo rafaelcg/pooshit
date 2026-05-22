@@ -2,7 +2,7 @@
 
 | Component | Status | URL |
 |-----------|--------|-----|
-| **Landing** | Live | https://pooshit.pages.dev |
+| **Landing** | Live | https://pooshit.dev |
 | **API** | Live | https://api-production-95f7.up.railway.app |
 | **npm CLI** | Not published | `npm publish -w pooshit` after API is up |
 
