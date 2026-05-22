@@ -66,7 +66,7 @@ export async function runDeploy(options: DeployOptions): Promise<void> {
     }
 
     const pollStartedAt = Date.now();
-    const final = await pollDeployStatus(uploaded.id, (status) => {
+    const final = await pollDeployStatus(uploaded.id, uploaded.deployToken, (status) => {
       if (!packSpinner) {
         return;
       }
@@ -208,6 +208,7 @@ export async function runLogs(options: { lines?: number; json?: boolean }): Prom
   try {
     const result = await fetchDeployLogs({
       deployId: state.id,
+      deployToken: state.deployToken,
       lines: options.lines ?? 100,
     });
 

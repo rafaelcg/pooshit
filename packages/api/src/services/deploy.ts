@@ -19,9 +19,11 @@ import {
   deployToRailway,
   ensureRailwayStartScript,
   fetchRailwayLogs,
+  RailwayDeployError,
 } from "../railway/deploy.js";
 import { assertSafeProject, SecurityError } from "../lib/security.js";
 import { resolveEffectiveStack } from "../lib/resolve-stack.js";
+import { logDeploy } from "../lib/log.js";
 
 export type StackType = "static" | "node" | "docker" | "generic";
 
@@ -171,6 +173,16 @@ export async function createDeploy(options: {
 
   void processDeployJob(id, options.tarballPath, slug, options.stack, {
     deployToken,
+    ipHash,
+  });
+
+  logDeploy("deploy.created", {
+    deployId: id,
+    slug,
+    ipHash,
+    stack: options.stack,
+    plan,
+    sizeBytes: options.sizeBytes,
   });
 
   return toStatusResponse({
@@ -201,6 +213,14 @@ async function redeployExisting(
     deployToken: existing.deployToken,
     existingServiceName: existing.railwayServiceId ?? existing.slug,
     projectId: existing.railwayProjectId ?? undefined,
+    ipHash: existing.ipHash ?? undefined,
+  });
+
+  logDeploy("deploy.redeploy", {
+    deployId: existing.id,
+    slug: existing.slug,
+    ipHash: existing.ipHash ?? undefined,
+    stack,
   });
 
   return toStatusResponse({
@@ -225,11 +245,20 @@ async function processDeployJob(
     deployToken?: string;
     existingServiceName?: string;
     projectId?: string;
+    ipHash?: string;
   } = {},
 ): Promise<void> {
   const { db, deploys } = useDb();
   const config = getConfig();
   const extractDir = join(config.uploadsDir, "extracted", deployId);
+  const startedAt = Date.now();
+
+  logDeploy("deploy.started", {
+    deployId,
+    slug,
+    ipHash: options.ipHash,
+    stack,
+  });
 
   try {
     await db
@@ -287,30 +316,49 @@ async function processDeployJob(
         errorMessage: null,
       })
       .where(eq(deploys.id, deployId));
+
+    logDeploy("deploy.succeeded", {
+      deployId,
+      slug,
+      ipHash: options.ipHash,
+      durationMs: Date.now() - startedAt,
+      url: result.url,
+    });
   } catch (error) {
-    const message =
-      error instanceof SecurityError || error instanceof Error
-        ? error.message
-        : "Deploy failed";
+    const { message, railwayProjectId, railwayServiceId } = formatDeployFailure(error);
+
     await db
       .update(deploys)
       .set({
         status: "failed",
         errorMessage: message,
+        railwayProjectId,
+        railwayServiceId,
         updatedAt: new Date(),
       })
       .where(eq(deploys.id, deployId));
+
+    logDeploy("deploy.failed", {
+      deployId,
+      slug,
+      ipHash: options.ipHash,
+      durationMs: Date.now() - startedAt,
+      error: message.split("\n")[0],
+    });
   } finally {
     await rm(extractDir, { recursive: true, force: true }).catch(() => undefined);
     await rm(tarballPath, { force: true }).catch(() => undefined);
   }
 }
 
-export async function getDeployStatus(deployId: string): Promise<DeployStatusResponse | null> {
+export async function getDeployStatus(
+  deployId: string,
+  deployToken: string,
+): Promise<DeployStatusResponse | null> {
   const { db, deploys } = useDb();
   const rows = await db.select().from(deploys).where(eq(deploys.id, deployId)).limit(1);
   const row = rows[0];
-  if (!row) {
+  if (!row || row.deployToken !== deployToken) {
     return null;
   }
   return toStatusResponse(row);
@@ -373,6 +421,12 @@ export async function destroyDeployByToken(
     .update(deploys)
     .set({ status: "expired", updatedAt: new Date() })
     .where(eq(deploys.id, row.id));
+
+  logDeploy("deploy.destroyed", {
+    deployId: row.id,
+    slug: row.slug,
+    ipHash: row.ipHash ?? undefined,
+  });
 
   return toStatusResponse({
     ...row,
@@ -456,7 +510,7 @@ export async function saveUpload(buffer: Buffer, deployId: string): Promise<stri
 
 export async function getDeployLogs(options: {
   deployId?: string;
-  deployToken?: string;
+  deployToken: string;
   lines?: number;
 }): Promise<{ logs: string; serviceName: string | null } | null> {
   const { db, deploys } = useDb();
@@ -468,7 +522,10 @@ export async function getDeployLogs(options: {
       .from(deploys)
       .where(eq(deploys.id, options.deployId))
       .limit(1);
-  } else if (options.deployToken) {
+    if (row && row.deployToken !== options.deployToken) {
+      return null;
+    }
+  } else {
     [row] = await db
       .select()
       .from(deploys)
@@ -499,4 +556,37 @@ export async function getDeployLogs(options: {
     logs,
     serviceName: row.railwayServiceId,
   };
+}
+
+function formatDeployFailure(error: unknown): {
+  message: string;
+  railwayProjectId?: string;
+  railwayServiceId?: string;
+} {
+  if (error instanceof RailwayDeployError) {
+    let message = error.message;
+    if (error.context?.logs) {
+      message = `${message}\n\n--- build logs ---\n${error.context.logs}`;
+    }
+    return {
+      message: truncateErrorMessage(message),
+      railwayProjectId: error.context?.projectId,
+      railwayServiceId: error.context?.serviceName,
+    };
+  }
+
+  const message =
+    error instanceof SecurityError || error instanceof Error
+      ? error.message
+      : "Deploy failed";
+
+  return { message: truncateErrorMessage(message) };
+}
+
+function truncateErrorMessage(message: string): string {
+  const maxLength = 8000;
+  if (message.length <= maxLength) {
+    return message;
+  }
+  return `${message.slice(0, maxLength)}\n… (truncated)`;
 }

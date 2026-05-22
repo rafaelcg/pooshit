@@ -1,4 +1,5 @@
 import { Hono } from "hono";
+import { getDeployTokenFromRequest } from "../lib/deploy-auth.js";
 import { generateId } from "../lib/ids.js";
 import {
   createDeploy,
@@ -80,7 +81,12 @@ deployRoutes.delete("/deploy/token/:token", async (c) => {
 });
 
 deployRoutes.get("/deploy/:id/status", async (c) => {
-  const status = await getDeployStatus(c.req.param("id"));
+  const deployToken = getDeployTokenFromRequest(c);
+  if (!deployToken) {
+    return c.json({ error: "Deploy token required" }, 401);
+  }
+
+  const status = await getDeployStatus(c.req.param("id"), deployToken);
   if (!status) {
     return c.json({ error: "Deploy not found" }, 404);
   }
@@ -88,9 +94,15 @@ deployRoutes.get("/deploy/:id/status", async (c) => {
 });
 
 deployRoutes.get("/deploy/:id/logs", async (c) => {
+  const deployToken = getDeployTokenFromRequest(c);
+  if (!deployToken) {
+    return c.json({ error: "Deploy token required" }, 401);
+  }
+
   const lines = Number(c.req.query("lines") ?? 100);
   const result = await getDeployLogs({
     deployId: c.req.param("id"),
+    deployToken,
     lines: Number.isFinite(lines) ? lines : 100,
   });
 

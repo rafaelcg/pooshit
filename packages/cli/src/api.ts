@@ -42,13 +42,17 @@ export async function uploadDeploy(options: {
 
 export async function pollDeployStatus(
   deployId: string,
+  deployToken: string,
   onTick?: (status: DeployStatus) => void,
 ): Promise<DeployStatus> {
   const { apiUrl } = getCliConfig();
   const maxAttempts = 420;
+  const authQuery = `token=${encodeURIComponent(deployToken)}`;
 
   for (let i = 0; i < maxAttempts; i++) {
-    const response = await fetch(`${apiUrl}/v1/deploy/${deployId}/status`);
+    const response = await fetch(
+      `${apiUrl}/v1/deploy/${deployId}/status?${authQuery}`,
+    );
     if (!response.ok) {
       throw new Error("Failed to poll deploy status");
     }
@@ -60,7 +64,7 @@ export async function pollDeployStatus(
       return status;
     }
     if (status.status === "failed") {
-      throw new Error(status.errorMessage ?? "Deploy failed");
+      throw new Error(await buildDeployFailureMessage(status, deployId, deployToken));
     }
     if (status.status === "expired") {
       throw new Error("Deploy expired before going live");
@@ -112,14 +116,18 @@ export async function destroyDeploy(deployToken: string): Promise<DeployStatus> 
 }
 
 export async function fetchDeployLogs(options: {
-  deployId: string;
+  deployId?: string;
+  deployToken: string;
   lines?: number;
 }): Promise<{ logs: string; serviceName: string | null }> {
   const { apiUrl } = getCliConfig();
   const lines = options.lines ?? 100;
-  const response = await fetch(
-    `${apiUrl}/v1/deploy/${options.deployId}/logs?lines=${lines}`,
-  );
+  const authQuery = `token=${encodeURIComponent(options.deployToken)}`;
+  const path = options.deployId
+    ? `${apiUrl}/v1/deploy/${options.deployId}/logs?lines=${lines}&${authQuery}`
+    : `${apiUrl}/v1/deploy/token/${encodeURIComponent(options.deployToken)}/logs?lines=${lines}`;
+
+  const response = await fetch(path);
 
   const body = (await response.json()) as {
     logs?: string;
@@ -135,6 +143,28 @@ export async function fetchDeployLogs(options: {
     logs: body.logs ?? "",
     serviceName: body.serviceName ?? null,
   };
+}
+
+async function buildDeployFailureMessage(
+  status: DeployStatus,
+  deployId: string,
+  deployToken: string,
+): Promise<string> {
+  const base = status.errorMessage ?? "Deploy failed";
+  if (base.includes("--- build logs ---")) {
+    return base;
+  }
+
+  try {
+    const result = await fetchDeployLogs({ deployId, deployToken, lines: 80 });
+    if (result.logs.trim()) {
+      return `${base}\n\n--- build logs ---\n${result.logs.trim()}`;
+    }
+  } catch {
+    // logs are best-effort
+  }
+
+  return base;
 }
 
 function sleep(ms: number): Promise<void> {

@@ -22,6 +22,43 @@ export interface RailwayDeployResult {
   url: string;
 }
 
+export class RailwayDeployError extends Error {
+  constructor(
+    message: string,
+    public readonly context?: {
+      projectId: string;
+      serviceName: string;
+      logs?: string;
+    },
+  ) {
+    super(message);
+  }
+}
+
+export function formatRailwayLogs(raw: string): string {
+  if (!raw.trim()) {
+    return "";
+  }
+
+  try {
+    const parsed = JSON.parse(raw) as unknown;
+    if (Array.isArray(parsed)) {
+      return parsed
+        .map((entry) => {
+          if (typeof entry === "object" && entry !== null && "message" in entry) {
+            return String((entry as { message: unknown }).message);
+          }
+          return String(entry);
+        })
+        .join("\n");
+    }
+  } catch {
+    // plain text logs
+  }
+
+  return raw.trim();
+}
+
 async function runRailway(
   args: string[],
   cwd?: string,
@@ -100,7 +137,10 @@ export async function deployToRailway(options: {
     throw new Error(`Railway service "${serviceName}" was not found after deploy`);
   }
 
-  await waitForDeploymentSuccess(resolvedServiceId, options.stack);
+  await waitForDeploymentSuccess(resolvedServiceId, options.stack, {
+    projectId,
+    serviceName,
+  });
 
   let railwayUrl = `https://${serviceName}-${config.railwayEnvironment}.up.railway.app`;
   if (!(await isUrlReachable(railwayUrl))) {
@@ -142,6 +182,7 @@ function deployWaitLimits(stack: string): { deployAttempts: number; urlAttempts:
 async function waitForDeploymentSuccess(
   serviceId: string,
   stack: string,
+  context?: { projectId: string; serviceName: string },
 ): Promise<void> {
   const { deployAttempts } = deployWaitLimits(stack);
   const intervalMs = 5000;
@@ -154,13 +195,42 @@ async function waitForDeploymentSuccess(
     }
 
     if (status === "FAILED" || status === "CRASHED" || status === "REMOVED") {
-      throw new Error(`Railway deployment ${status.toLowerCase()}`);
+      throw await buildRailwayDeployError(
+        `Railway deployment ${status.toLowerCase()}`,
+        context,
+      );
     }
 
     await sleep(intervalMs);
   }
 
-  throw new Error("Railway deployment timed out");
+  throw await buildRailwayDeployError("Railway deployment timed out", context);
+}
+
+async function buildRailwayDeployError(
+  message: string,
+  context?: { projectId: string; serviceName: string },
+): Promise<RailwayDeployError> {
+  if (!context) {
+    return new RailwayDeployError(message);
+  }
+
+  let logs: string | undefined;
+  try {
+    const raw = await fetchRailwayLogs({
+      projectId: context.projectId,
+      serviceName: context.serviceName,
+      lines: 80,
+    });
+    const formatted = formatRailwayLogs(raw);
+    if (formatted) {
+      logs = formatted;
+    }
+  } catch {
+    // logs are best-effort on failure
+  }
+
+  return new RailwayDeployError(message, { ...context, logs });
 }
 
 async function waitForUrlHealthy(
