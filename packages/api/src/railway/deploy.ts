@@ -82,7 +82,17 @@ export async function deployToRailway(options: {
   );
 
   if (options.existingServiceName) {
-    await runRailway(["service", "link", serviceName], options.sourceDir);
+    const linkedId = await findServiceIdByName(projectId, serviceName);
+    if (linkedId) {
+      await runRailway(["service", "link", serviceName], options.sourceDir);
+    } else {
+      await createEmptyService({
+        projectId,
+        environmentId,
+        name: serviceName,
+      });
+      await sleep(2000);
+    }
   } else {
     const existingId = await findServiceIdByName(projectId, serviceName);
     if (!existingId) {

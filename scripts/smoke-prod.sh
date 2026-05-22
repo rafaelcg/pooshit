@@ -33,9 +33,9 @@ test_npx_version() {
 test_static_deploy() {
   local output
   mkdir -p "$SMOKE_DIR"
+  rm -rf "$SMOKE_DIR/.pooshit" "$SMOKE_DIR/package.json" "$SMOKE_DIR/server.js" "$SMOKE_DIR/index.html"
   echo '<h1>pooshit smoke static</h1>' > "$SMOKE_DIR/index.html"
-  rm -f "$SMOKE_DIR/package.json" "$SMOKE_DIR/server.js"
-  output="$(cd "$SMOKE_DIR" && node "$ROOT/packages/cli/dist/index.js" 2>&1)" || true
+  output="$(cd "$SMOKE_DIR" && npx --yes pooshit@latest 2>&1)" || true
   echo "$output" > /tmp/pooshit-static.out
   echo "$output" | grep -qE 'https://[^ ]+\.up\.railway\.app'
 }
@@ -43,6 +43,7 @@ test_static_deploy() {
 test_node_deploy() {
   local output
   mkdir -p "$SMOKE_DIR"
+  rm -f "$SMOKE_DIR/index.html"
   cat > "$SMOKE_DIR/package.json" <<'EOF'
 {
   "name": "smoke-node",
@@ -58,8 +59,7 @@ http.createServer((_req, res) => {
   res.end("pooshit node ok");
 }).listen(port, "0.0.0.0", () => console.log("listening", port));
 EOF
-  rm -f "$SMOKE_DIR/index.html"
-  output="$(cd "$SMOKE_DIR" && node "$ROOT/packages/cli/dist/index.js" 2>&1)" || true
+  output="$(cd "$SMOKE_DIR" && npx --yes pooshit@latest 2>&1)" || true
   echo "$output" > /tmp/pooshit-node.out
   echo "$output" | grep -qE 'https://[^ ]+\.up\.railway\.app'
 }

@@ -12,7 +12,6 @@ packages/api/uploads
 coverage
 .temp/
 temp/
-demo/*.gif
 packages/api/pooshit.db
 packages/api/pooshit.db-journal
 *.tsbuildinfo
