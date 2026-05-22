@@ -16,6 +16,7 @@ done
 ENV_FILE="$ROOT/packages/api/.env"
 if [[ -f "$ENV_FILE" ]]; then
   export RAILWAY_API_TOKEN="$(grep '^RAILWAY_API_TOKEN=' "$ENV_FILE" | cut -d= -f2- | tr -d '\r' || true)"
+  export RAILWAY_USER_PROJECT_ID="$(grep '^RAILWAY_USER_PROJECT_ID=' "$ENV_FILE" | cut -d= -f2- | tr -d '\r' || true)"
 fi
 unset RAILWAY_USE_CLI_LOGIN RAILWAY_TOKEN
 

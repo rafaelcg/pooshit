@@ -3,9 +3,15 @@
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
+# shellcheck source=smoke-teardown.sh
+source "$ROOT/scripts/smoke-teardown.sh"
 SMOKE_DIR="${POOSHIT_SMOKE_DIR:-$HOME/.pooshit-smoke}"
 PASS=0
 FAIL=0
+
+# Reuse one smoke slot: clear any previous run, tear down when finished.
+teardown_pooshit_dir "$SMOKE_DIR"
+trap 'teardown_pooshit_dir "$SMOKE_DIR"' EXIT
 
 green() { printf '\033[0;32m✓\033[0m %s\n' "$*"; }
 red() { printf '\033[0;31m✗\033[0m %s\n' "$*"; }

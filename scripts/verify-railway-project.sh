@@ -4,10 +4,13 @@ set -euo pipefail
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 cd "$ROOT"
+# shellcheck source=smoke-teardown.sh
+source "$ROOT/scripts/smoke-teardown.sh"
 
 ENV_FILE="$ROOT/packages/api/.env"
 if [[ -f "$ENV_FILE" ]]; then
   export RAILWAY_API_TOKEN="$(grep '^RAILWAY_API_TOKEN=' "$ENV_FILE" | cut -d= -f2- | tr -d '\r' || true)"
+  export RAILWAY_USER_PROJECT_ID="$(grep '^RAILWAY_USER_PROJECT_ID=' "$ENV_FILE" | cut -d= -f2- | tr -d '\r' || true)"
 fi
 unset RAILWAY_USE_CLI_LOGIN RAILWAY_TOKEN
 
@@ -37,13 +40,14 @@ sys.exit(1)
 }
 
 TEST_DIR="$(mktemp -d)"
+trap 'teardown_pooshit_dir "$TEST_DIR"; rm -rf "$TEST_DIR"' EXIT
 echo '<h1>project verify</h1>' > "$TEST_DIR/index.html"
 
 echo "Deploying via npx pooshit@latest..."
 DEPLOY_OUT="$(cd "$TEST_DIR" && npx --yes pooshit@latest 2>&1)" || true
 echo "$DEPLOY_OUT"
 
-SLUG="$(echo "$DEPLOY_OUT" | grep -Eo 'https://[a-z0-9-]+\.up\.railway\.app' | head -1 | sed 's|https://||;s|\.up\.railway\.app||')"
+SLUG="$(echo "$DEPLOY_OUT" | grep -Eo 'https://[a-z0-9-]+\.pooshit\.dev' | head -1 | sed 's|https://||;s|\.pooshit\.dev||')"
 if [[ -z "$SLUG" ]]; then
   echo "✗ Failed to get deploy slug from CLI output"
   exit 1
@@ -66,7 +70,7 @@ else
   echo "✓ Service not in hostie-api project (expected)"
 fi
 
-if curl -sf --max-time 15 "https://${SLUG}.up.railway.app" | grep -q "project verify"; then
+if curl -sf --max-time 15 "https://${SLUG}.pooshit.dev" | grep -q "project verify"; then
   echo "✓ Deploy URL responds with expected content"
 else
   echo "✗ Deploy URL missing expected content (may still be starting)"

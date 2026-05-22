@@ -2,8 +2,16 @@
 # Fresh-machine smoke: no local POOSHIT_* env, uses published npm package only.
 set -euo pipefail
 
+ROOT="$(cd "$(dirname "$0")/.." && pwd)"
+# shellcheck source=smoke-teardown.sh
+source "$ROOT/scripts/smoke-teardown.sh"
+
 TEST_DIR="$(mktemp -d)"
-trap 'rm -rf "$TEST_DIR"' EXIT
+cleanup() {
+  teardown_pooshit_dir "$TEST_DIR"
+  rm -rf "$TEST_DIR"
+}
+trap cleanup EXIT
 
 echo "Fresh-machine smoke test"
 echo "Temp dir: $TEST_DIR"
