@@ -27,7 +27,12 @@ export default Sentry.withSentry(
       const url = new URL(request.url);
       const clientIp = request.headers.get("CF-Connecting-IP") ?? "unknown";
 
-      if (url.pathname !== "/health" && url.pathname !== "/" && !url.pathname.startsWith("/v1")) {
+      if (
+        url.pathname !== "/health" &&
+        url.pathname !== "/" &&
+        url.pathname !== "/debug-sentry" &&
+        !url.pathname.startsWith("/v1")
+      ) {
         return jsonError("Not found", 404);
       }
 
