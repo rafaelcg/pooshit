@@ -2,6 +2,22 @@ import { bootstrapEnv } from "./env.js";
 
 bootstrapEnv();
 
+const UUID_PATTERN = /^[0-9a-f-]{36}$/i;
+
+function resolveRailwayProjectRef(): string {
+  const railwayProject = process.env.RAILWAY_PROJECT?.trim();
+  if (railwayProject && UUID_PATTERN.test(railwayProject)) {
+    return railwayProject;
+  }
+
+  const pooshitProject = process.env.POOSHIT_RAILWAY_PROJECT?.trim();
+  if (pooshitProject && UUID_PATTERN.test(pooshitProject)) {
+    return pooshitProject;
+  }
+
+  return pooshitProject || railwayProject || "pooshit";
+}
+
 export interface PooshitConfig {
   port: number;
   pooshitDomain: string | undefined;
@@ -46,10 +62,7 @@ export function getConfig(): PooshitConfig {
     port: Number(process.env.PORT ?? 3099),
     pooshitDomain,
     railwayWorkspace: process.env.RAILWAY_WORKSPACE?.trim() || undefined,
-    railwayProject:
-      process.env.POOSHIT_RAILWAY_PROJECT?.trim() ||
-      process.env.RAILWAY_PROJECT?.trim() ||
-      "pooshit",
+    railwayProject: resolveRailwayProjectRef(),
     railwayEnvironment: process.env.RAILWAY_ENVIRONMENT?.trim() || "production",
     railwayEnvironmentId:
       process.env.POOSHIT_RAILWAY_ENVIRONMENT_ID?.trim() ||
