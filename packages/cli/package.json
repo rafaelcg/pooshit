@@ -12,11 +12,10 @@
     "url": "https://github.com/rafaelcg/pooshit/issues"
   },
   "type": "module",
-  "bin": {
-    "pooshit": "./dist/index.js"
-  },
+  "bin": "./dist/index.js",
   "files": [
-    "dist"
+    "dist",
+    "README.md"
   ],
   "scripts": {
     "build": "tsc",

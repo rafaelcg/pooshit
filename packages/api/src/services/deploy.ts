@@ -21,6 +21,7 @@ import {
   fetchRailwayLogs,
 } from "../railway/deploy.js";
 import { assertSafeProject, SecurityError } from "../lib/security.js";
+import { resolveEffectiveStack } from "../lib/resolve-stack.js";
 
 export type StackType = "static" | "node" | "docker" | "generic";
 
@@ -242,13 +243,15 @@ async function processDeployJob(
 
     await assertSafeProject(extractDir);
 
+    const effectiveStack = resolveEffectiveStack(extractDir, stack);
+
     let result: {
       url: string;
       projectId: string;
       serviceName: string;
     };
 
-    if (stack === "static" && isHetznerStaticEnabled(config)) {
+    if (effectiveStack === "static" && isHetznerStaticEnabled(config)) {
       const hetznerResult = await deployStaticToHetzner({
         slug,
         sourceDir: extractDir,
@@ -259,11 +262,11 @@ async function processDeployJob(
         serviceName: hetznerResult.serviceName,
       };
     } else {
-      await ensureRailwayStartScript(extractDir, stack);
+      await ensureRailwayStartScript(extractDir, effectiveStack);
       const railwayResult = await deployToRailway({
         slug,
         sourceDir: extractDir,
-        stack,
+        stack: effectiveStack,
         existingServiceName: options.existingServiceName,
       });
       result = {

@@ -45,7 +45,7 @@ export async function pollDeployStatus(
   onTick?: (status: DeployStatus) => void,
 ): Promise<DeployStatus> {
   const { apiUrl } = getCliConfig();
-  const maxAttempts = 180;
+  const maxAttempts = 420;
 
   for (let i = 0; i < maxAttempts; i++) {
     const response = await fetch(`${apiUrl}/v1/deploy/${deployId}/status`);

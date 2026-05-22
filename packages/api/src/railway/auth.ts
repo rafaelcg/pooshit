@@ -1,5 +1,5 @@
 import { execa } from "execa";
-import { buildRailwaySubprocessEnv } from "../env.js";
+import { getRailwaySubprocessOptions } from "../env.js";
 import { logRailwayWorkspace } from "./workspace.js";
 import { resolveProjectId } from "./graphql.js";
 import { getConfig } from "../config.js";
@@ -15,7 +15,7 @@ export async function verifyRailwayAuth(): Promise<void> {
   }
 
   const result = await execa("railway", ["whoami"], {
-    env: buildRailwaySubprocessEnv(),
+    ...getRailwaySubprocessOptions(),
     reject: false,
   });
 

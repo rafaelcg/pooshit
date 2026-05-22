@@ -1,5 +1,10 @@
 const DEPLOY_DOMAIN = "pooshit.dev";
+const RAILWAY_ENV = "production";
 const RAILWAY_HOST_SUFFIX = ".up.railway.app";
+
+function railwayUpstreamHost(slug: string): string {
+  return `${slug}-${RAILWAY_ENV}${RAILWAY_HOST_SUFFIX}`;
+}
 
 /** Subdomains handled elsewhere (Pages, API, etc.) */
 const RESERVED_SUBDOMAINS = new Set([
@@ -29,7 +34,7 @@ export default {
       return new Response("Not found", { status: 404 });
     }
 
-    const upstreamHost = `${slug}${RAILWAY_HOST_SUFFIX}`;
+    const upstreamHost = railwayUpstreamHost(slug);
     const upstreamUrl = new URL(url.pathname + url.search, `https://${upstreamHost}`);
 
     const headers = new Headers(request.headers);

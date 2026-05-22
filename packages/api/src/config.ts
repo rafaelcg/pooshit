@@ -8,6 +8,7 @@ export interface PooshitConfig {
   railwayWorkspace: string | undefined;
   railwayProject: string;
   railwayEnvironment: string;
+  railwayEnvironmentId: string | undefined;
   freeTtlHours: number;
   freeMaxBytes: number;
   freeMaxDeploysPerHour: number;
@@ -43,8 +44,14 @@ export function getConfig(): PooshitConfig {
     port: Number(process.env.PORT ?? 3099),
     pooshitDomain,
     railwayWorkspace: process.env.RAILWAY_WORKSPACE?.trim() || undefined,
-    railwayProject: process.env.RAILWAY_PROJECT?.trim() || "pooshit",
+    railwayProject:
+      process.env.POOSHIT_RAILWAY_PROJECT?.trim() ||
+      process.env.RAILWAY_PROJECT?.trim() ||
+      "pooshit",
     railwayEnvironment: process.env.RAILWAY_ENVIRONMENT?.trim() || "production",
+    railwayEnvironmentId:
+      process.env.POOSHIT_RAILWAY_ENVIRONMENT_ID?.trim() ||
+      undefined,
     freeTtlHours: Number(process.env.FREE_TTL_HOURS ?? 24),
     freeMaxBytes: Number(process.env.FREE_MAX_BYTES ?? 50 * 1024 * 1024),
     freeMaxDeploysPerHour: Number(process.env.FREE_MAX_DEPLOYS_PER_HOUR ?? 5),

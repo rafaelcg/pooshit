@@ -1,6 +1,6 @@
 import { execa } from "execa";
 import { getConfig } from "../config.js";
-import { buildRailwaySubprocessEnv } from "../env.js";
+import { getRailwaySubprocessOptions } from "../env.js";
 
 interface RailwayWorkspace {
   id: string;
@@ -19,7 +19,7 @@ export async function resolveRailwayWorkspace(): Promise<string> {
   }
 
   const result = await execa("railway", ["whoami", "--json"], {
-    env: buildRailwaySubprocessEnv(),
+    ...getRailwaySubprocessOptions(),
     reject: false,
   });
 

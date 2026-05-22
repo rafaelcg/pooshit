@@ -29,10 +29,20 @@ export function buildRailwaySubprocessEnv(): NodeJS.ProcessEnv {
     CI: "true",
   };
 
-  if (useCliLogin || !token) {
-    return env;
+  if (!useCliLogin && token) {
+    env.RAILWAY_API_TOKEN = token;
   }
 
-  env.RAILWAY_API_TOKEN = token;
   return env;
+}
+
+/** Railway CLI options — never inherit host service env (RAILWAY_PROJECT_ID etc.). */
+export function getRailwaySubprocessOptions(): {
+  env: NodeJS.ProcessEnv;
+  extendEnv: false;
+} {
+  return {
+    env: buildRailwaySubprocessEnv(),
+    extendEnv: false,
+  };
 }

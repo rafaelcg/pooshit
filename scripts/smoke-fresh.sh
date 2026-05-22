@@ -24,7 +24,7 @@ env -i \
     echo 'Running: npx --yes pooshit@latest'
     OUT=\$(npx --yes pooshit@latest 2>&1)
     echo \"\$OUT\"
-    echo \"\$OUT\" | grep -qE 'https://[^ ]+\\.up\\.railway\\.app'
+    echo \"\$OUT\" | grep -qE 'https://[^ ]+\\.pooshit\\.dev'
   "
 
 echo

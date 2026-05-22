@@ -37,7 +37,7 @@ test_static_deploy() {
   echo '<h1>pooshit smoke static</h1>' > "$SMOKE_DIR/index.html"
   output="$(cd "$SMOKE_DIR" && npx --yes pooshit@latest 2>&1)" || true
   echo "$output" > /tmp/pooshit-static.out
-  echo "$output" | grep -qE 'https://[^ ]+\.up\.railway\.app'
+  echo "$output" | grep -qE 'https://[^ ]+\.pooshit\.dev'
 }
 
 test_node_deploy() {
@@ -61,7 +61,7 @@ http.createServer((_req, res) => {
 EOF
   output="$(cd "$SMOKE_DIR" && npx --yes pooshit@latest 2>&1)" || true
   echo "$output" > /tmp/pooshit-node.out
-  echo "$output" | grep -qE 'https://[^ ]+\.up\.railway\.app'
+  echo "$output" | grep -qE 'https://[^ ]+\.pooshit\.dev'
 }
 
 test_blocked_script() {

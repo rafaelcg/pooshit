@@ -46,17 +46,13 @@ export async function runDeploy(options: DeployOptions): Promise<void> {
   try {
     const packed = await packProject(cwd);
     if (packSpinner) {
-      packSpinner.text = getStatusLine(statusIndex++);
+      packSpinner.text = `uploading (${formatBytes(packed.sizeBytes)})…`;
     }
 
-    if (packed.sizeBytes > 50 * 1024 * 1024) {
-      if (packSpinner) {
-        packSpinner.info(
-          `Uploading ${formatBytes(packed.sizeBytes)} — free limit is 50 MB`,
-        );
-      }
-    } else if (packSpinner) {
-      packSpinner.text = `${getStatusLine(statusIndex++)} (${formatBytes(packed.sizeBytes)})`;
+    if (packed.sizeBytes > 50 * 1024 * 1024 && packSpinner) {
+      packSpinner.info(
+        `Uploading ${formatBytes(packed.sizeBytes)} — free limit is 50 MB`,
+      );
     }
 
     const uploaded = await uploadDeploy({
@@ -66,12 +62,19 @@ export async function runDeploy(options: DeployOptions): Promise<void> {
     });
 
     if (packSpinner) {
-      packSpinner.text = getStatusLine(statusIndex++);
+      packSpinner.text = "building on Railway…";
     }
 
+    const pollStartedAt = Date.now();
     const final = await pollDeployStatus(uploaded.id, (status) => {
-      if (packSpinner && status.status === "building") {
-        packSpinner.text = getStatusLine(statusIndex++);
+      if (!packSpinner) {
+        return;
+      }
+      const elapsedSec = Math.floor((Date.now() - pollStartedAt) / 1000);
+      if (status.status === "pending") {
+        packSpinner.text = `queued… (${elapsedSec}s)`;
+      } else if (status.status === "building") {
+        packSpinner.text = `building on Railway… (${elapsedSec}s)`;
       }
     });
 

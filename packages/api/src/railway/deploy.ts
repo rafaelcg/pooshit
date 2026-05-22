@@ -3,11 +3,13 @@ import { mkdir, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 import { getConfig } from "../config.js";
 import { buildUrl } from "../lib/ids.js";
-import { buildRailwaySubprocessEnv } from "../env.js";
+import { getRailwaySubprocessOptions } from "../env.js";
 import {
   createEmptyService,
   deleteRailwayServiceById,
+  ensureServicePublicDomain,
   findServiceIdByName,
+  getLatestDeploymentStatus,
   resolveEnvironmentId,
   resolveProjectId,
 } from "./graphql.js";
@@ -20,24 +22,19 @@ export interface RailwayDeployResult {
   url: string;
 }
 
-function railwayEnv(): NodeJS.ProcessEnv {
-  return buildRailwaySubprocessEnv();
-}
-
 async function runRailway(
   args: string[],
   cwd?: string,
 ): Promise<{ stdout: string; stderr: string }> {
   const result = await execa("railway", args, {
     cwd,
-    env: railwayEnv(),
+    ...getRailwaySubprocessOptions(),
     reject: false,
   });
 
   if (result.exitCode !== 0) {
-    throw new Error(
-      result.stderr || result.stdout || `railway ${args.join(" ")} failed`,
-    );
+    const detail = result.stderr || result.stdout || "unknown error";
+    throw new Error(`railway ${args.join(" ")} failed: ${detail}`);
   }
 
   return { stdout: result.stdout, stderr: result.stderr };
@@ -59,53 +56,30 @@ export async function deployToRailway(options: {
       serviceName: options.existingServiceName ?? options.slug,
       url: config.pooshitDomain
         ? `https://${options.slug}.${config.pooshitDomain}`
-        : `https://${options.slug}.up.railway.app`,
+        : `https://${options.slug}-${config.railwayEnvironment}.up.railway.app`,
     };
   }
 
   const projectId = await resolveProjectId(config.railwayProject);
-  const environmentId = await resolveEnvironmentId(projectId, config.railwayEnvironment);
-  const workspace = await resolveRailwayWorkspace();
-  const serviceName = options.existingServiceName ?? options.slug;
-  const scope = ["-p", projectId, "-e", config.railwayEnvironment] as const;
-
-  await runRailway(
-    [
-      "link",
-      "-p",
-      projectId,
-      "-e",
-      config.railwayEnvironment,
-      "-w",
-      workspace,
-    ],
-    options.sourceDir,
+  const environmentId = await resolveEnvironmentId(
+    projectId,
+    config.railwayEnvironment,
+    config.railwayEnvironmentId,
   );
+  const serviceName = options.existingServiceName ?? options.slug;
+  const scope = ["-p", projectId, "-e", environmentId] as const;
 
-  if (options.existingServiceName) {
-    const linkedId = await findServiceIdByName(projectId, serviceName);
-    if (linkedId) {
-      await runRailway(["service", "link", serviceName], options.sourceDir);
-    } else {
-      await createEmptyService({
-        projectId,
-        environmentId,
-        name: serviceName,
-      });
-      await sleep(2000);
-    }
-  } else {
-    const existingId = await findServiceIdByName(projectId, serviceName);
-    if (!existingId) {
-      await createEmptyService({
-        projectId,
-        environmentId,
-        name: serviceName,
-      });
-      await sleep(2000);
-    }
+  let serviceId = await findServiceIdByName(projectId, serviceName);
+  if (!serviceId) {
+    serviceId = await createEmptyService({
+      projectId,
+      environmentId,
+      name: serviceName,
+    });
+    await sleep(2000);
   }
 
+  // Only `railway up` — never `railway link` (inherits hostie-api project on the API service).
   await runRailway(
     [
       "up",
@@ -119,37 +93,104 @@ export async function deployToRailway(options: {
     options.sourceDir,
   );
 
-  await waitForHealthyDeploy(options.sourceDir, serviceName, config.railwayEnvironment);
+  const resolvedServiceId =
+    (await findServiceIdByName(projectId, serviceName)) ?? serviceId;
 
-  const railwayUrl = await resolvePublicUrl(options.sourceDir, serviceName);
+  if (!/^[0-9a-f-]{36}$/i.test(resolvedServiceId)) {
+    throw new Error(`Railway service "${serviceName}" was not found after deploy`);
+  }
+
+  await waitForDeploymentSuccess(resolvedServiceId, options.stack);
+
+  let railwayUrl = `https://${serviceName}-${config.railwayEnvironment}.up.railway.app`;
+  if (!(await isUrlReachable(railwayUrl))) {
+    try {
+      railwayUrl = await ensureServicePublicDomain({
+        environmentId,
+        serviceId: resolvedServiceId,
+      });
+    } catch {
+      // Domain may already exist — keep predictable hostname.
+    }
+  }
+
+  // Best-effort — Railway SUCCESS is the real gate; edge DNS can lag.
+  await waitForUrlHealthy(railwayUrl, options.stack, 6);
+
   const url = config.pooshitDomain
     ? buildUrl(serviceName, config.pooshitDomain)
     : railwayUrl;
-  const serviceId =
-    (await findServiceIdByName(projectId, serviceName)) ?? serviceName;
 
   return {
     projectId,
-    serviceId,
+    serviceId: resolvedServiceId,
     serviceName,
     url,
   };
 }
 
-async function resolvePublicUrl(
-  sourceDir: string,
-  serviceName: string,
-): Promise<string> {
-  const { stdout } = await runRailway(
-    ["domain", "--json", "-s", serviceName],
-    sourceDir,
-  );
-  const parsed = parseRailwayDomain(stdout);
-  if (parsed) {
-    return parsed;
+function deployWaitLimits(stack: string): { deployAttempts: number; urlAttempts: number } {
+  if (stack === "static") {
+    return { deployAttempts: 36, urlAttempts: 24 };
+  }
+  if (stack === "node" || stack === "docker") {
+    return { deployAttempts: 120, urlAttempts: 36 };
+  }
+  return { deployAttempts: 90, urlAttempts: 30 };
+}
+
+async function waitForDeploymentSuccess(
+  serviceId: string,
+  stack: string,
+): Promise<void> {
+  const { deployAttempts } = deployWaitLimits(stack);
+  const intervalMs = 5000;
+
+  for (let attempt = 0; attempt < deployAttempts; attempt++) {
+    const status = await getLatestDeploymentStatus(serviceId);
+
+    if (status === "SUCCESS") {
+      return;
+    }
+
+    if (status === "FAILED" || status === "CRASHED" || status === "REMOVED") {
+      throw new Error(`Railway deployment ${status.toLowerCase()}`);
+    }
+
+    await sleep(intervalMs);
   }
 
-  throw new Error("Deploy succeeded but Railway did not return a public URL");
+  throw new Error("Railway deployment timed out");
+}
+
+async function waitForUrlHealthy(
+  url: string,
+  stack: string,
+  maxAttemptsOverride?: number,
+): Promise<void> {
+  const { urlAttempts } = deployWaitLimits(stack);
+  const maxAttempts = maxAttemptsOverride ?? urlAttempts;
+  const intervalMs = 5000;
+
+  for (let attempt = 0; attempt < maxAttempts; attempt++) {
+    if (await isUrlReachable(url)) {
+      return;
+    }
+    await sleep(intervalMs);
+  }
+}
+
+async function isUrlReachable(url: string): Promise<boolean> {
+  try {
+    const response = await fetch(url, {
+      method: "GET",
+      redirect: "follow",
+      signal: AbortSignal.timeout(10_000),
+    });
+    return response.ok || response.status === 304;
+  } catch {
+    return false;
+  }
 }
 
 export function parseRailwayDomain(output: string): string | null {
@@ -189,34 +230,6 @@ function normalizeUrl(value: string): string {
     return value;
   }
   return `https://${value}`;
-}
-
-async function waitForHealthyDeploy(
-  cwd: string,
-  serviceName: string,
-  environment: string,
-  maxAttempts = 60,
-): Promise<void> {
-  for (let i = 0; i < maxAttempts; i++) {
-    try {
-      const { stdout } = await runRailway(
-        ["deployment", "list", "--json", "-s", serviceName, "-e", environment],
-        cwd,
-      );
-      if (stdout.includes("SUCCESS") || stdout.includes("success")) {
-        return;
-      }
-      if (stdout.includes("FAILED") || stdout.includes("failed")) {
-        throw new Error("Railway deployment failed");
-      }
-    } catch (error) {
-      if (i === maxAttempts - 1) {
-        throw error;
-      }
-    }
-    await sleep(5000);
-  }
-  throw new Error("Railway deployment timed out");
 }
 
 export async function deleteRailwayDeploy(options: {
