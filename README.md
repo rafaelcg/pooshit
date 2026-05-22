@@ -2,13 +2,13 @@
 
 Ship anything with one command. Zero config. No Railway account needed.
 
+**Website:** [pooshit.dev](https://pooshit.dev) · **Docs:** [pooshit.dev/docs](https://pooshit.dev/docs) · **npm:** [`pooshit`](https://www.npmjs.com/package/pooshit)
+
 ```bash
 npx pooshit
 ```
 
 ![Deploy demo](demo/pooshit-demo.gif)
-
-**Live:** [pooshit.dev](https://pooshit.dev) · API at `api-production-95f7.up.railway.app`
 
 ## Quick start
 
@@ -19,7 +19,19 @@ cd my-app
 npx pooshit
 ```
 
-You get a public URL on `*.up.railway.app`. Free tier: 50 MB, live for 24 hours.
+You get a public URL on `*.pooshit.dev`. Free tier: 50 MB, live for 24 hours.
+
+## What works
+
+| You have | What to do |
+|----------|------------|
+| `index.html` in a folder | `cd` that folder → `npx pooshit` |
+| Node app with `start` script | `cd` project → `npx pooshit` |
+| Vite / React / SPA | `npm run build` → `cd dist` → `npx pooshit` |
+| Dockerfile | `cd` project → `npx pooshit` |
+
+Run from the folder you want live — not the monorepo root unless that *is* the app.  
+Full detection rules: [pooshit.dev/docs/project-types](https://pooshit.dev/docs/project-types)
 
 ## Local development
 
@@ -49,7 +61,7 @@ POOSHIT_API_URL=http://localhost:3099 npm run pooshit
 |-----------|-----|
 | Landing | https://pooshit.dev |
 | API | https://api-production-95f7.up.railway.app |
-| User deploys | `https://{slug}.up.railway.app` |
+| User deploys | `https://{slug}.pooshit.dev` |
 
 See [DEPLOY.md](./DEPLOY.md) for Railway setup and [HANDOVER.md](./HANDOVER.md) for architecture.
 
@@ -68,7 +80,7 @@ See [DEPLOY.md](./DEPLOY.md) for Railway setup and [HANDOVER.md](./HANDOVER.md) 
 
 ## Pricing (planned)
 
-- **Free:** 50 MB, 24h TTL, random subdomain
+- **Free:** 50 MB, 24h TTL, random `*.pooshit.dev` subdomain
 - **Pro ($9.99/mo):** 500 MB, forever, custom subdomain + domain
 
 ## License

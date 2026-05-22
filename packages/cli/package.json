@@ -1,7 +1,16 @@
 {
   "name": "pooshit",
-  "version": "0.1.2",
-  "description": "Ship anything with one command. Zero config.",
+  "version": "0.1.4",
+  "description": "Deploy from your terminal in ~60 seconds. One command, public URL on *.pooshit.dev.",
+  "homepage": "https://pooshit.dev",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/rafaelcg/pooshit.git",
+    "directory": "packages/cli"
+  },
+  "bugs": {
+    "url": "https://github.com/rafaelcg/pooshit/issues"
+  },
   "type": "module",
   "bin": {
     "pooshit": "./dist/index.js"
@@ -19,7 +28,10 @@
     "hosting",
     "deploy",
     "cli",
-    "railway"
+    "terminal",
+    "pooshit",
+    "static-site",
+    "zero-config"
   ],
   "license": "MIT",
   "dependencies": {
