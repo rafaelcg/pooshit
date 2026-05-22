@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+import { createRequire } from "node:module";
 import { Command } from "commander";
 import {
   runDeploy,
@@ -13,12 +14,15 @@ import {
   runUpgrade,
 } from "./commands.js";
 
+const require = createRequire(import.meta.url);
+const { version } = require("../package.json") as { version: string };
+
 const program = new Command();
 
 program
   .name("pooshit")
   .description("Ship anything with one command. Zero config.")
-  .version("0.1.2");
+  .version(version);
 
 program
   .command("deploy", { isDefault: true })

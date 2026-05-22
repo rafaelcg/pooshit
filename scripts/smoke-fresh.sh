@@ -22,7 +22,7 @@ env -i \
     npx --yes pooshit@latest --version
     echo
     echo 'Running: npx --yes pooshit@latest'
-    OUT=\$(npx --yes pooshit@latest 2>&1)
+    OUT=\$(npx --yes pooshit@latest 2>&1) || { echo \"\$OUT\"; exit 1; }
     echo \"\$OUT\"
     echo \"\$OUT\" | grep -qE 'https://[^ ]+\\.pooshit\\.dev'
   "

@@ -1,6 +1,6 @@
 {
   "name": "pooshit",
-  "version": "0.1.5",
+  "version": "0.1.6",
   "description": "Deploy from your terminal in ~60 seconds. One command, public URL on *.pooshit.dev.",
   "homepage": "https://pooshit.dev",
   "repository": {
@@ -12,7 +12,9 @@
     "url": "https://github.com/rafaelcg/pooshit/issues"
   },
   "type": "module",
-  "bin": "./dist/index.js",
+  "bin": {
+    "pooshit": "dist/index.js"
+  },
   "files": [
     "dist",
     "README.md"
